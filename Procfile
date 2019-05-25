@@ -1,1 +1,1 @@
-worker: python tracker.py
+clock: python tracker.py
