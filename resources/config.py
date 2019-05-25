@@ -7,8 +7,8 @@ import os
 
 
 class Config:
-    # student_course_loc = "./resources/student-courses.json"
-    student_course_loc = "./resources/test-student-courses.json"
+    student_course_loc = "./resources/student-courses.json"
+    # student_course_loc = "./resources/test-student-courses.json"
     course_term_loc = "./resources/course-term.json"
 
     search_URL = "https://www.acs.ncsu.edu/php/coursecat/search.php"
