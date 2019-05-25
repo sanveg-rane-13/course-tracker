@@ -1,0 +1,28 @@
+{
+  "student-1": {
+    "name": "Sanveg Rane",
+    "email": "sanveg.rane@gmail.com",
+    "subject": "CSC",
+    "courses": {
+      "503": "Fall 2019",
+      "510": "Spring 2019"
+    }
+  },
+  "student-2": {
+    "name": "Saurabh Mhatre",
+    "email": "mhatre.saurabh@outlook.com",
+    "subject": "CSC",
+    "courses": {
+      "510": "Fall 2019"
+    }
+  },
+  "student-3": {
+    "name": "Sanveg Rane",
+    "email": "sanveg.rane@gmail.com",
+    "subject": "ECE",
+    "courses": {
+      "505": "Fall 2019",
+      "513": "Fall 2019"
+    }
+  }
+}

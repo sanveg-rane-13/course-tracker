@@ -1,0 +1,12 @@
+{
+  "student-1": {
+    "name": "Sanveg Rane",
+    "email": "sanveg.rane@gmail.com",
+    "subject": "CSC",
+    "courses": {
+      "503": "Fall 2019",
+      "510": "Fall 2019",
+      "522": "Fall 2019"
+    }
+  }
+}
