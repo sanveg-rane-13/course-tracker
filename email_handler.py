@@ -19,6 +19,7 @@ def send_email(receiver_email, receiver_dets):
     context = ssl.create_default_context()
 
     with smtplib.SMTP(email_details['server'], email_details['port']) as server:
+        print("sender email" + email_details['sender_email'])
         server.ehlo()
         server.starttls(context=context)
         server.login(email_details['sender_email'], email_details['sender_pass'])
