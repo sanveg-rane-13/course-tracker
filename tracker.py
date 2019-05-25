@@ -6,8 +6,12 @@ Author:
 """
 import course_fetcher as fetcher
 import email_handler as emailer
+from apscheduler.schedulers.blocking import BlockingScheduler
+
+scheduler = BlockingScheduler()
 
 
+@scheduler.scheduled_job('interval', hours=12)
 def perform_operation():
     """
     Performs the basic function of the script:
@@ -65,5 +69,7 @@ def send_emails(student_details):
     emailer.send_details_to_students(student_details)
 
 
+# scheduler to run the check
+scheduler.start()
 if __name__ == '__main__':
     perform_operation()
