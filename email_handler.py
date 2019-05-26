@@ -4,39 +4,58 @@ Module to send email
 Author:
     Sanveg Rane
 """
-import smtplib, ssl
+import smtplib
+import ssl
 import logging as logger
 from resources.config import Config as config
 
 
 def send_details_to_students(student_details):
-    for email_address, details in student_details.items():
-        send_email(email_address, details)
+    sender = init_and_get_email_sender()
+
+    if sender is not None:
+        for email_address, details in student_details.items():
+            send_email(email_address, details, sender)
 
 
-def send_email(receiver_email, receiver_dets):
+def init_and_get_email_sender():
     """
-    Log into SMTP host to send emails to receivers
+    Create SMTP server and login
+    Returns:
+        Email sender
+    """
+    email_details = get_email_sender_details()
+    logger.info("Initializing SMTP sender using: " + email_details['sender_email'])
+
+    try:
+        server = smtplib.SMTP(email_details['server'], email_details['port'])
+        server.ehlo()
+
+        context = ssl.create_default_context()
+        server.starttls(context=context)
+
+        server.login(email_details['sender_email'], email_details['sender_pass'])
+        logger.debug("Successfully created SMTP sender")
+        return server
+
+    except Exception as error:
+        logger.error("Error creating mail server", error)
+
+
+def send_email(receiver_email, receiver_dets, sender):
+    """
+    Send email with details
     Args:
         receiver_email: emailId of receiver
         receiver_dets: Details of all the courses registered and their statuses
-
-    TODO: Check if invalid courses registered and don't send mail if no course registered
+        sender: Logged in SMTP server
     """
-    logger.info("Sending email to: " + receiver_email)
-
-    email_details = get_email_sender_details()
     email_body = create_message_body(receiver_dets)
-
-    context = ssl.create_default_context()
-    with smtplib.SMTP(email_details['server'], email_details['port']) as server:
-        server.ehlo()
-        server.starttls(context=context)
-        server.login(email_details['sender_email'], email_details['sender_pass'])
-        # sending email
-        server.sendmail(email_details['sender_email'], receiver_email,
-                        email_body)
-        logger.debug("Email sent successfully to:" + receiver_email)
+    try:
+        sender.sendmail(config.sender_email, receiver_email, email_body)
+        logger.info("Sent Email to {} successfully".format(receiver_email))
+    except Exception as error:
+        logger.error("Error sending email", error)
 
 
 def get_email_sender_details():

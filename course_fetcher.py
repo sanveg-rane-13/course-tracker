@@ -220,7 +220,6 @@ def read_json(file_path):
     Returns:
         Json object retrieved from the file
     """
-    logger.debug("Reading file for details: " + file_path)
     with open(file_path, mode="r", encoding="UTF-8") as json_file:
         data = json.load(json_file)
 
