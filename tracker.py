@@ -12,7 +12,7 @@ from resources.config import Config as config
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 scheduler = BlockingScheduler()
-scheduler_hrs_interval = config.scheduler_hrs
+scheduler_hrs_interval = int(config.scheduler_hrs)
 
 
 @scheduler.scheduled_job('interval', minutes=scheduler_hrs_interval)
