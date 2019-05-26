@@ -15,7 +15,7 @@ scheduler = BlockingScheduler()
 scheduler_hrs_interval = int(config.scheduler_hrs)
 
 
-@scheduler.scheduled_job('interval', minutes=scheduler_hrs_interval)
+@scheduler.scheduled_job('interval', hours=scheduler_hrs_interval)
 def perform_operation():
     """
     Performs the basic function of the script:
