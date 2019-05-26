@@ -12,7 +12,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 scheduler = BlockingScheduler()
 
 
-@scheduler.scheduled_job('interval', minutes=5)
+@scheduler.scheduled_job('interval', minutes=2)
 def perform_operation():
     """
     Performs the basic function of the script:
