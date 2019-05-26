@@ -26,3 +26,5 @@ class Config:
 
     owner = "Sanveg Rane"
     reg_url = "https://portalsp.acs.ncsu.edu"
+
+    scheduler_hrs = os.environ.get("TRIGGER_HRS", 10)
