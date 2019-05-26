@@ -6,6 +6,7 @@ Author:
 """
 import course_fetcher as fetcher
 import email_handler as emailer
+import logging as logger
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 scheduler = BlockingScheduler()
@@ -19,6 +20,7 @@ def perform_operation():
         2) For each student create object of all courses registered by him
         3) Send email to each student with the status of each course
     """
+    logger.info("JOB TRIGGERED")
     # Step 1: Fetch course details for all the courses registered by the student
     courses_details = fetch_course_data()
 
@@ -35,7 +37,7 @@ def fetch_course_data():
     Returns:
         Dict of course and its details
     """
-    print("Fetching course details")
+    logger.info("Fetching course details")
     courses_details = fetcher.get_courses()
     # for cr_name, cr_det in courses_details.items():
     #     print(cr_name + " : " + str(cr_det))
@@ -52,7 +54,7 @@ def get_students_details(courses_details):
     Returns:
         Dict of email ID of student and all courses registered to
     """
-    print("Parsing student data")
+    logger.info("Parsing student data")
     students_details = fetcher.map_details_to_students(courses_details)
     # for email, details in students_details.items():
     #     print(email + " : " + str(details))
@@ -66,10 +68,14 @@ def send_emails(student_details):
     Args:
         student_details: Dict of email ID of student and all courses registered to
     """
+    logger.info("Sending emails")
     emailer.send_details_to_students(student_details)
 
 
 # scheduler to run the check
 scheduler.start()
+logger.info("JOB Scheduled!")
+
+# main method to trigger script
 if __name__ == '__main__':
     perform_operation()

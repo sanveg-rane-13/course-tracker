@@ -13,6 +13,7 @@ Author:
 """
 import json
 import requests as req
+import logging as logger
 from lxml import html
 from resources.config import Config as config
 
@@ -85,6 +86,9 @@ def get_search_details_page(course):
         HTML page retrieved from the endpoint converted from string
 
     """
+    course_name = course["subject"] + "-" + course["num"]
+    logger.info("Searching status for: " + course_name)
+
     search_url = config.search_URL
     params = {
         'subject': course["subject"],
@@ -101,9 +105,10 @@ def get_search_details_page(course):
         data = resp.json()
         if data:
             # return the HTML retrieved from the endpoint for the course
+            logger.debug("Fetched Data for course: " + course_name)
             return html.fromstring(data['html'])
     else:
-        print("Error in request")
+        logger.error("Error fetching data for course: " + course_name)
 
 
 def fetch_status_from_response(course_detail, html_page):
@@ -215,6 +220,7 @@ def read_json(file_path):
     Returns:
         Json object retrieved from the file
     """
+    logger.debug("Reading file for details: " + file_path)
     with open(file_path, mode="r", encoding="UTF-8") as json_file:
         data = json.load(json_file)
 

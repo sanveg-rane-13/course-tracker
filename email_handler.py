@@ -5,6 +5,7 @@ Author:
     Sanveg Rane
 """
 import smtplib, ssl
+import logging as logger
 from resources.config import Config as config
 
 
@@ -14,17 +15,28 @@ def send_details_to_students(student_details):
 
 
 def send_email(receiver_email, receiver_dets):
-    print("Sending email to: " + receiver_email)
-    email_details = get_email_sender_details()
-    context = ssl.create_default_context()
+    """
+    Log into SMTP host to send emails to receivers
+    Args:
+        receiver_email: emailId of receiver
+        receiver_dets: Details of all the courses registered and their statuses
 
+    TODO: Check if invalid courses registered and don't send mail if no course registered
+    """
+    logger.info("Sending email to: " + receiver_email)
+
+    email_details = get_email_sender_details()
+    email_body = create_message_body(receiver_dets)
+
+    context = ssl.create_default_context()
     with smtplib.SMTP(email_details['server'], email_details['port']) as server:
         server.ehlo()
         server.starttls(context=context)
         server.login(email_details['sender_email'], email_details['sender_pass'])
-
+        # sending email
         server.sendmail(email_details['sender_email'], receiver_email,
-                        create_message_body(receiver_dets))
+                        email_body)
+        logger.debug("Email sent successfully to:" + receiver_email)
 
 
 def get_email_sender_details():
