@@ -11,6 +11,8 @@ class Config:
     student_course_loc = "./resources/test-student-courses.json"
     course_term_loc = "./resources/course-term.json"
 
+    log_directory = "tracker-app.log"
+
     search_URL = "https://www.acs.ncsu.edu/php/coursecat/search.php"
     course_avail_xpath = "//*[@class=\"table section-table table-striped table-condensed\"]/tr[#ROW#]/td[4]"
     course_loc_xpath = "//*[@class=\"table section-table table-striped table-condensed\"]/tr[#ROW#]/td[6]"
