@@ -8,7 +8,7 @@ import course_fetcher as fetcher
 import email_handler as emailer
 import logging as logger
 import resources.log_config
-import resources.config as config
+from resources.config import Config as config
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 scheduler = BlockingScheduler()
