@@ -4,10 +4,8 @@ Root of script to track NCSU Courses
 Author:
     Sanveg Rane
 """
-import course_fetcher as fetcher
-import email_handler as emailer
+from src import course_fetcher as fetcher, email_handler as emailer
 import logging as logger
-import resources.log_config
 from resources.config import Config as config
 from apscheduler.schedulers.blocking import BlockingScheduler
 
