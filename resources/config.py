@@ -7,8 +7,8 @@ import os
 
 
 class Config:
-    # student_course_loc = "./resources/student-courses.json"
-    student_course_loc = "./resources/trail-student-courses.json"
+    student_course_loc = "./resources/student-courses.json"
+    # student_course_loc = "./resources/trail-student-courses.json"
     course_term_loc = "./resources/course-term.json"
 
     log_directory = "./tracker-app.log"
