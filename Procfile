@@ -1,1 +1,1 @@
-clock: /src/python tracker.py
+clock: src/python tracker.py
