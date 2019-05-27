@@ -19,7 +19,7 @@ class Config:
     course_name_xpath = "//*[@class=\"course\"]/h1/small"
 
     smtp_server = "smtp.gmail.com"
-    port = 465
+    port = 587
     sender_email = os.environ.get("SMTP_ID", "email")
     sender_pass = os.environ.get("SMTP_PASS", "password")
     email_header = "NCSU Courses status"
