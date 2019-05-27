@@ -6,6 +6,7 @@ Author:
 """
 from src import course_fetcher as fetcher, email_handler as emailer
 import logging as logger
+import resources.log_config
 from resources.config import Config as config
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -13,7 +14,7 @@ scheduler = BlockingScheduler()
 scheduler_hrs_interval = int(config.scheduler_hrs)
 
 
-@scheduler.scheduled_job('interval', hours=scheduler_hrs_interval)
+# @scheduler.scheduled_job('interval', hours=scheduler_hrs_interval)
 def perform_operation():
     """
     Performs the basic function of the script:
@@ -74,8 +75,8 @@ def send_emails(student_details):
 
 
 # scheduler to run the check
-scheduler.start()
-logger.info("Job scheduled at every {} hours.".format(scheduler_hrs_interval))
+# scheduler.start()
+# logger.info("Job scheduled at every {} hours.".format(scheduler_hrs_interval))
 
 # main method to trigger script
 if __name__ == '__main__':
