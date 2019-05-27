@@ -1,0 +1,9 @@
+{
+  "prop": "Data item 1",
+  "arr": [
+    "Array item 1"
+  ],
+  "dict": {
+    "dictProp": "Dict Property"
+  }
+}

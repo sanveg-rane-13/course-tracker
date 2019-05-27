@@ -8,10 +8,10 @@ import os
 
 class Config:
     student_course_loc = "./resources/student-courses.json"
-    # student_course_loc = "./resources/test-student-courses.json"
+    # student_course_loc = "./resources/trail-student-courses.json"
     course_term_loc = "./resources/course-term.json"
 
-    log_directory = "tracker-app.log"
+    log_directory = "./tracker-app.log"
 
     search_URL = "https://www.acs.ncsu.edu/php/coursecat/search.php"
     course_avail_xpath = "//*[@class=\"table section-table table-striped table-condensed\"]/tr[#ROW#]/td[4]"
