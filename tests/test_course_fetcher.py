@@ -5,6 +5,7 @@ python -m unittest test_course_fetcher
 """
 import unittest
 import src.course_fetcher as crs_fchr
+import src.json_handler as json_hndlr
 
 
 class TestCourseFetcher(unittest.TestCase):
@@ -25,7 +26,7 @@ class TestCourseFetcher(unittest.TestCase):
         dict_val = "Dict Property"
 
         test_file_path = "./test_json.json"
-        data = crs_fchr.read_json(test_file_path)
+        data = json_hndlr.read_json(test_file_path)
 
         self.assertEqual(data['prop'], prop_val, "Reading json property")
         self.assertEqual(data['arr'][0], arr_val, "Reading json array")

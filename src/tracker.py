@@ -11,73 +11,74 @@ from resources.config import Config as config
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 scheduler = BlockingScheduler()
-scheduler_hrs_interval = int(config.scheduler_hrs)
+course_fetcher_hrs_interval = int(config.cr_update_schdlr_hrs)
 
 
-@scheduler.scheduled_job('interval', hours=scheduler_hrs_interval)
-def perform_operation():
+def initialize_course_data():
     """
-    Performs the basic function of the script:
-        1) Fetches course details for all courses registered
-        2) For each student create object of all courses registered by him
-        3) Send email to each student with the status of each course
+    Read course data initially and save in temp file
+    Executed on start up
     """
-    logger.info("JOB TRIGGERED")
-    # Step 1: Fetch course details for all the courses registered by the student
-    courses_details = fetch_course_data()
-
-    # Step 2: Map all course details to each student subscribed to the course
-    student_details = get_students_details(courses_details)
-
-    # Step 3: Send email with details
-    send_emails(student_details)
+    logger.info("Initializing course data")
+    fetcher.init_courses_data()
 
 
-def fetch_course_data():
+@scheduler.scheduled_job('interval', hours=course_fetcher_hrs_interval)
+def track_course_status_and_update_students():
     """
-    Fetch course details
-    Returns:
-        Dict of course and its details
+    Scheduled task to perform following functions:
+        - Update the statuses of courses
+        - Check if any course updated
+        - Send notifications for each updated course
     """
-    logger.info("Fetching course details")
-    courses_details = fetcher.get_courses()
-    # for cr_name, cr_det in courses_details.items():
-    #     print(cr_name + " : " + str(cr_det))
-
-    return courses_details
+    logger.info("Course-updater job triggered!")
+    course_updates = fetcher.update_crs_details_and_get_updates()
+    send_update_emails(course_updates)
 
 
-def get_students_details(courses_details):
-    """
-    Fetch student details with course details mapped for each student
-    Args:
-        courses_details: Dict of course and its details
-
-    Returns:
-        Dict of email ID of student and all courses registered to
-    """
-    logger.info("Parsing student data")
-    students_details = fetcher.map_details_to_students(courses_details)
-    # for email, details in students_details.items():
-    #     print(email + " : " + str(details))
-
-    return students_details
-
-
-def send_emails(student_details):
+def send_update_emails(courses_list):
     """
     Send the processed details of courses to the email addresses of each student
     Args:
-        student_details: Dict of email ID of student and all courses registered to
+        courses_list: List of course names to send emails
     """
-    logger.info("Sending emails")
-    emailer.send_details_to_students(student_details)
+    if len(courses_list) <= 0:
+        logger.info("No courses to update")
+        emailer.send_test_email()
+        return
+
+    logger.info("Sending update emails")
+    courses_data = fetcher.get_course_data(courses_list, False)
+    std_crs_map = fetcher.map_courses_to_emails(courses_data)
+
+    # send mails
+    emailer.send_courses_updates(courses_data, std_crs_map)
+    emailer.send_test_email()
 
 
-# scheduler to run the check
-scheduler.start()
-logger.info("Job scheduled at every {} hours.".format(scheduler_hrs_interval))
+def send_status_emails():
+    """
+    Send status email to each subscribed student
+    """
+    logger.info("Sending status emails")
+    courses_data = fetcher.get_course_data([], False)
+    std_crs_map = fetcher.map_courses_to_emails(courses_data)
+    emailer.send_courses_updates(courses_data, std_crs_map)
+
+
+def main():
+    """
+    Starting to schedule jobs
+        - Load course data and student data in json files
+        - Schedule jobs
+    """
+    logger.info("Starting Script")
+    initialize_course_data()
+
+    logger.info("Course update Job scheduled at every {} hours.".format(course_fetcher_hrs_interval))
+    scheduler.start()
+
 
 # main method to trigger script
 if __name__ == '__main__':
-    perform_operation()
+    main()

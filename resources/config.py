@@ -8,7 +8,7 @@ import os
 
 class Config:
     student_course_loc = "./resources/student-courses.json"
-    # student_course_loc = "./resources/trail-student-courses.json"
+    # student_course_loc = "../resources/trail-student-courses.json"
     course_term_loc = "./resources/course-term.json"
 
     log_directory = "./tracker-app.log"
@@ -23,8 +23,14 @@ class Config:
     sender_email = os.environ.get("SMTP_ID", "email")
     sender_pass = os.environ.get("SMTP_PASS", "password")
     email_header = "NCSU Courses status"
+    email_update_header = "NCSU Courses updates"
 
     owner = "Sanveg Rane"
+    test_receiver = "srsanrocks1@gmail.com"
     reg_url = "https://portalsp.acs.ncsu.edu"
 
-    scheduler_hrs = os.environ.get("TRIGGER_HRS", "10")
+    cr_update_schdlr_hrs = os.environ.get("CRS_UPDATE_TRIGGER_HRS", "2")
+
+    temp_loc = "./tmp/"
+    course_file_name = "courses_data.json"
+    studnt_file_name = "student_data.json"

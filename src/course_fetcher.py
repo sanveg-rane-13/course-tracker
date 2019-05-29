@@ -11,14 +11,15 @@ The json will be moved to a no sql DB if required to load
 Author:
     Sanveg Rane
 """
-import json
 import requests as req
 import logging as logger
+import src.json_handler as json_hndlr
+import copy
 from lxml import html
 from resources.config import Config as config
 
 
-def get_courses():
+def init_courses_data():
     """
     The method performs:
         Parses the JSON of students opting courses and creates list
@@ -28,16 +29,19 @@ def get_courses():
     Returns:
         List of courses with their statuses
     """
-    student_courses = read_json(config.student_course_loc)
+    student_courses = json_hndlr.read_json(config.student_course_loc)
     courses_details = parse_course_data(student_courses)
     update_course_status(courses_details)
+    clean_invalid_subjects(courses_details)
 
-    return courses_details
+    file_loc = config.temp_loc + config.course_file_name
+    json_hndlr.write_json(courses_details, file_loc)
 
 
 def parse_course_data(student_courses):
     """
     Parse the JSON config to create list of subjects to fetch
+    Used at load to create a temporary storage of all courses
     Args:
         student_courses: JSON extracted from resources
 
@@ -45,20 +49,29 @@ def parse_course_data(student_courses):
         List if student courses to be fetched for status
     """
     course_details_map = {}
-    course_term_map = read_json(config.course_term_loc)
+    stud_info_map = {}
+    course_term_map = json_hndlr.read_json(config.course_term_loc)
 
-    for course_data in student_courses.values():
-        for cr_num, cr_term in course_data["courses"].items():
-            c_subject = course_data["subject"]
+    for student_data in student_courses.values():
+        stud_info_map[student_data["email"]] = student_data["name"]
+
+        # iterating all courses in the object
+        for cr_num, cr_term in student_data["courses"].items():
+            c_subject = student_data["subject"]
             course_name = get_course_name(c_subject, cr_num, cr_term)
+
+            # create a new course entry in course details
             if course_name not in course_details_map:
-                #  adding course details in map to easily iterate over
                 course_detail = {
                     'subject': c_subject,
                     'num': cr_num,
-                    'term': course_term_map[cr_term]
+                    'term': course_term_map[cr_term],
+                    "stud_info": {}
                 }
                 course_details_map[course_name] = course_detail
+
+            # add student email details to the course
+            course_details_map[course_name]["stud_info"][student_data["email"]] = student_data["name"]
 
     return course_details_map
 
@@ -72,6 +85,7 @@ def update_course_status(courses):
     """
     for detail in courses.values():
         subject_data = get_search_details_page(detail)
+
         if subject_data is not None:
             fetch_status_from_response(detail, subject_data)
 
@@ -107,6 +121,8 @@ def get_search_details_page(course):
             # return the HTML retrieved from the endpoint for the course
             logger.debug("Fetched Data for course: " + course_name)
             return html.fromstring(data['html'])
+        else:
+            logger.error("Invalid course:" + course_name)
     else:
         logger.error("Error fetching data for course: " + course_name)
 
@@ -163,38 +179,67 @@ def fetch_status_from_response(course_detail, html_page):
         course_detail['name'] = name_raw_data
 
 
-def map_details_to_students(courses_details):
+def clean_invalid_subjects(course_details):
     """
-    Map details of each course to the student who has opted for the course
+    Remove courses whoes data was not available on the website
     Args:
-        courses_details: Updated details of all subjects
+        course_details: Updated details of all subjects
+    """
+    cr_to_del = []
+    for cr_name, cr_detail in course_details.items():
+        if 'invalid' in cr_detail and cr_detail['invalid'] == True:
+            cr_to_del.append(cr_name)
+
+    for cr_name in cr_to_del:
+        del course_details[cr_name]
+
+
+def update_crs_details_and_get_updates():
+    """
+    The method performs following tasks:
+        - Read saved courses
+        - Fetch updated data
+        - Compare and return list of updated courses
+        - Save the updated course details in json
+    Returns:
+        list of courses which have been updated with statuses
+    """
+    try:
+        cr_details_file_loc = config.temp_loc + config.course_file_name
+        current_data = json_hndlr.read_json(cr_details_file_loc)
+
+        updated_data = copy.deepcopy(current_data)
+        update_course_status(updated_data)
+        logger.info("Fetched updated data")
+
+        changes = compare_and_get_updates(current_data, updated_data)
+        logger.debug("Number of courses updated: {}".format(str(len(changes))))
+
+        json_hndlr.write_json(updated_data, cr_details_file_loc)
+    except Exception as error:
+        logger.error("Error updating course statuses: " + str(error), error)
+
+    return changes
+
+
+def compare_and_get_updates(saved_details, updated_details):
+    """
+    Compare updated course status
+    Args:
+        saved_details: old details before update
+        updated_details: fetched details
 
     Returns:
-        Dict of student email mapped to details of all courses opted for
+        Dict of updates in courses
     """
-    student_details = {}
-    details_map = read_json(config.student_course_loc)
+    updates_courses = []
+    for cr_name, cr_details in saved_details.items():
+        new_crs_data = updated_details[cr_name]
+        if cr_details["status"] != new_crs_data["status"]:
+            logger.info("Course status updated: {}".format(cr_name))
+            updates_courses.append(cr_name)
 
-    for details in details_map.values():
-        stud_course_data = {}
-        stud_email = details["email"]
-
-        for cr_num, cr_term in details['courses'].items():
-            course_name = get_course_name(details['subject'], cr_num, cr_term)
-            course_details = courses_details[course_name]
-            if course_details is not None:
-                stud_course_data[course_name] = course_details
-
-        if stud_email in student_details:
-            # if same email exists with different subject, merge the courses into same object as we send single email
-            student_details[stud_email]['courses'].update(stud_course_data)
-        else:
-            # create new entry in the dict
-            details['courses'] = stud_course_data
-            student_details[stud_email] = details
-            del student_details[stud_email]["subject"]
-
-    return student_details
+    return updates_courses
 
 
 def get_course_name(subject, course_id, term):
@@ -211,16 +256,53 @@ def get_course_name(subject, course_id, term):
     return subject + ":" + course_id + " - " + term
 
 
-def read_json(file_path):
+def get_course_data(course_list, get_all_data):
     """
-    Read json object from the file
+    For the courses passed, get details of each course
     Args:
-        file_path: Path of the json file, eg. path-to-file/file-name.json
+        course_list: List of courses to return data
+        get_all_data: boolean, if set to true, return data for all courses
 
     Returns:
-        Json object retrieved from the file
+        Dict of course name and corresponding data
     """
-    with open(file_path, mode="r", encoding="UTF-8") as json_file:
-        data = json.load(json_file)
 
-    return data
+    try:
+        cr_details_file_loc = config.temp_loc + config.course_file_name
+        courses_data = json_hndlr.read_json(cr_details_file_loc)
+    except Exception as error:
+        logger.error("Error fetching courses file", error)
+
+    fetched_data = {}
+    if courses_data is not None:
+        # if flag set, return entire data
+        if get_all_data is True:
+            fetched_data = courses_data
+
+        else:
+            # fetch course in generated course file
+            for cr_name in course_list:
+                crs_det = courses_data[cr_name]
+                if crs_det is not None:
+                    fetched_data[cr_name] = crs_det
+
+    return fetched_data
+
+
+def map_courses_to_emails(courses_details):
+    """
+    Map courses list to each email
+    Returns
+        Dict of email ids with courses registered
+        eg. {"email": [courses]}
+    """
+    stud_crs_map = {}
+
+    for cr_name, cr_dets in courses_details.items():
+        students = cr_dets["stud_info"]
+        for email in students.keys():
+            if email not in stud_crs_map:
+                stud_crs_map[email] = []
+            stud_crs_map[email].append(cr_name)
+
+    return stud_crs_map

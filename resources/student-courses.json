@@ -18,5 +18,14 @@
       "510": "Fall 2019",
       "522": "Fall 2019"
     }
+  },
+  "student-3": {
+    "name": "Rohit Nair",
+    "email": "nair1111998@gmail.com",
+    "subject": "CSC",
+    "courses": {
+      "510": "Fall 2019",
+      "522": "Fall 2019"
+    }
   }
 }
