@@ -29,6 +29,7 @@ def send_courses_updates(courses, student_crs_map):
     if sender is not None:
         for email_id, updated_courses in student_crs_map.items():
             send_update_email(email_id, updated_courses, courses, sender)
+        sender.quit()
 
 
 def send_courses_statuses(courses, student_crs_map):

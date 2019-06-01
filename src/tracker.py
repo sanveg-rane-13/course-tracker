@@ -4,10 +4,11 @@ Root of script to track NCSU Courses
 Author:
     Sanveg Rane
 """
-from src import course_fetcher as fetcher, email_handler as emailer
+import sys
 import logging as logger
-import resources.log_config
+from src import course_fetcher as fetcher, email_handler as emailer
 from resources.config import Config as config
+import resources.log_config  # added to setup logging config
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 scheduler = BlockingScheduler()
@@ -61,7 +62,7 @@ def send_status_emails():
     Send status email to each subscribed student
     """
     logger.info("Sending status emails")
-    courses_data = fetcher.get_course_data([], False)
+    courses_data = fetcher.get_course_data([], True)
     std_crs_map = fetcher.map_courses_to_emails(courses_data)
     emailer.send_courses_updates(courses_data, std_crs_map)
 
@@ -79,6 +80,19 @@ def main():
     scheduler.start()
 
 
+def print_current_statuses():
+    """
+    Print current status of the json file
+    """
+    courses_data = fetcher.get_course_data([], True)
+    logger.info("Courses data: " + str(courses_data))
+
+
 # main method to trigger script
 if __name__ == '__main__':
-    main()
+    args = sys.argv
+
+    if len(args) > 1 and args[1] == "print_json":
+        print_current_statuses()
+    else:
+        main()
