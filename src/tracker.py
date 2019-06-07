@@ -4,13 +4,14 @@ Root of script to track NCSU Courses
 Author:
     Sanveg Rane
 """
-import sys
 import logging as logger
+import resources.log_config  # added to setup logging config
+
+from apscheduler.schedulers.blocking import BlockingScheduler
 from src import course_fetcher as fetcher, email_handler as emailer
 from resources.config import Config as config
-import resources.log_config  # added to setup logging config
-from apscheduler.schedulers.blocking import BlockingScheduler
 
+# initializing scheduler
 scheduler = BlockingScheduler()
 course_fetcher_hrs_interval = int(config.cr_update_schdlr_hrs)
 
@@ -34,10 +35,10 @@ def track_course_status_and_update_students():
     """
     logger.info("Course-updater job triggered!")
     course_updates = fetcher.update_crs_details_and_get_updates()
-    send_update_emails(course_updates)
+    send_updates(course_updates)
 
 
-def send_update_emails(courses_list):
+def send_updates(courses_list):
     """
     Send the processed details of courses to the email addresses of each student
     Args:
@@ -48,12 +49,13 @@ def send_update_emails(courses_list):
         emailer.send_test_email()
         return
 
-    logger.info("Sending update emails")
     courses_data = fetcher.get_course_data(courses_list, False)
-    std_crs_map = fetcher.map_courses_to_emails(courses_data)
 
     # send mails
-    emailer.send_courses_updates(courses_data, std_crs_map)
+    logger.info("Sending update emails")
+    std_crs_email_map = fetcher.map_courses_to_emails(courses_data)
+    emailer.send_courses_updates(courses_data, std_crs_email_map)
+
     emailer.send_test_email()
 
 
@@ -75,24 +77,20 @@ def main():
     """
     logger.info("Starting Script")
     initialize_course_data()
+    emailer.init()
 
     logger.info("Course update Job scheduled at every {} hours.".format(course_fetcher_hrs_interval))
     scheduler.start()
 
 
-def print_current_statuses():
-    """
-    Print current status of the json file
-    """
-    courses_data = fetcher.get_course_data([], True)
-    logger.info("Courses data: " + str(courses_data))
+def test_flow():
+    logger.info("Starting Script")
+    initialize_course_data()
+    emailer.init()
+    track_course_status_and_update_students()
 
 
 # main method to trigger script
 if __name__ == '__main__':
-    args = sys.argv
-
-    if len(args) > 1 and args[1] == "print_json":
-        print_current_statuses()
-    else:
-        main()
+    main()
+    # test_flow()

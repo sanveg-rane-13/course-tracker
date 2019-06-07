@@ -16,7 +16,7 @@ import logging as logger
 import src.json_handler as json_hndlr
 import copy
 from lxml import html
-from resources.config import Config as config
+from resources.config import Config as Config
 
 
 def init_courses_data():
@@ -29,18 +29,18 @@ def init_courses_data():
     Returns:
         List of courses with their statuses
     """
-    student_courses = json_hndlr.read_json(config.student_course_loc)
+    student_courses = json_hndlr.read_json(Config.student_course_loc)
     courses_details = parse_course_data(student_courses)
     update_course_status(courses_details)
     clean_invalid_subjects(courses_details)
 
-    file_loc = config.temp_loc + config.course_file_name
+    file_loc = Config.temp_loc + Config.course_file_name
     json_hndlr.write_json(courses_details, file_loc)
 
 
 def parse_course_data(student_courses):
     """
-    Parse the JSON config to create list of subjects to fetch
+    Parse the JSON Config to create list of subjects to fetch
     Used at load to create a temporary storage of all courses
     Args:
         student_courses: JSON extracted from resources
@@ -49,12 +49,9 @@ def parse_course_data(student_courses):
         List if student courses to be fetched for status
     """
     course_details_map = {}
-    stud_info_map = {}
-    course_term_map = json_hndlr.read_json(config.course_term_loc)
+    course_term_map = json_hndlr.read_json(Config.course_term_loc)
 
     for student_data in student_courses.values():
-        stud_info_map[student_data["email"]] = student_data["name"]
-
         # iterating all courses in the object
         for cr_num, cr_term in student_data["courses"].items():
             c_subject = student_data["subject"]
@@ -66,12 +63,16 @@ def parse_course_data(student_courses):
                     'subject': c_subject,
                     'num': cr_num,
                     'term': course_term_map[cr_term],
-                    "stud_info": {}
+                    "stud_email": {},
+                    "stud_phnum": {}
                 }
                 course_details_map[course_name] = course_detail
 
             # add student email details to the course
-            course_details_map[course_name]["stud_info"][student_data["email"]] = student_data["name"]
+            course_details_map[course_name]["stud_email"][student_data["email"]] = student_data["name"]
+
+            # add student number details to the course
+            course_details_map[course_name]["stud_phnum"][student_data["number"]] = student_data["name"]
 
     return course_details_map
 
@@ -103,7 +104,7 @@ def get_search_details_page(course):
     course_name = course["subject"] + "-" + course["num"]
     logger.info("Searching status for: " + course_name)
 
-    search_url = config.search_URL
+    search_url = Config.search_URL
     params = {
         'subject': course["subject"],
         'course-number': course["num"],
@@ -113,7 +114,11 @@ def get_search_details_page(course):
         'table-only': '0'
     }
 
-    resp = req.post(search_url, data=params)
+    resp = None
+    try:
+        resp = req.post(search_url, data=params)
+    except Exception as error:
+        logger.error("Error fetching details of course".format(error))
 
     if resp:
         data = resp.json()
@@ -144,8 +149,8 @@ def fetch_status_from_response(course_detail, html_page):
 
     while True:
         row_num = str(row_number)  # track the row number in table
-        avail_xpath = config.course_avail_xpath.replace("#ROW#", row_num)
-        cr_loc_xpath = config.course_loc_xpath.replace("#ROW#", row_num)
+        avail_xpath = Config.course_avail_xpath.replace("#ROW#", row_num)
+        cr_loc_xpath = Config.course_loc_xpath.replace("#ROW#", row_num)
 
         try:
             avail_data = html_page.xpath(avail_xpath)
@@ -174,7 +179,7 @@ def fetch_status_from_response(course_detail, html_page):
     if course_invalid is True:
         course_detail['invalid'] = True
     else:
-        name_data = html_page.xpath(config.course_name_xpath)
+        name_data = html_page.xpath(Config.course_name_xpath)
         name_raw_data = name_data[0].text_content()
         course_detail['name'] = name_raw_data
 
@@ -187,7 +192,7 @@ def clean_invalid_subjects(course_details):
     """
     cr_to_del = []
     for cr_name, cr_detail in course_details.items():
-        if 'invalid' in cr_detail and cr_detail['invalid'] == True:
+        if 'invalid' in cr_detail and cr_detail['invalid']:
             cr_to_del.append(cr_name)
 
     for cr_name in cr_to_del:
@@ -204,8 +209,9 @@ def update_crs_details_and_get_updates():
     Returns:
         list of courses which have been updated with statuses
     """
+    changes = []
     try:
-        cr_details_file_loc = config.temp_loc + config.course_file_name
+        cr_details_file_loc = Config.temp_loc + Config.course_file_name
         current_data = json_hndlr.read_json(cr_details_file_loc)
 
         updated_data = copy.deepcopy(current_data)
@@ -266,9 +272,9 @@ def get_course_data(course_list, get_all_data):
     Returns:
         Dict of course name and corresponding data
     """
-
+    courses_data = None
     try:
-        cr_details_file_loc = config.temp_loc + config.course_file_name
+        cr_details_file_loc = Config.temp_loc + Config.course_file_name
         courses_data = json_hndlr.read_json(cr_details_file_loc)
     except Exception as error:
         logger.error("Error fetching courses file", error)
@@ -292,6 +298,8 @@ def get_course_data(course_list, get_all_data):
 def map_courses_to_emails(courses_details):
     """
     Map courses list to each email
+    Args:
+        courses_details: Details of courses tracked
     Returns
         Dict of email ids with courses registered
         eg. {"email": [courses]}
@@ -299,7 +307,7 @@ def map_courses_to_emails(courses_details):
     stud_crs_map = {}
 
     for cr_name, cr_dets in courses_details.items():
-        students = cr_dets["stud_info"]
+        students = cr_dets["stud_email"]
         for email in students.keys():
             if email not in stud_crs_map:
                 stud_crs_map[email] = []

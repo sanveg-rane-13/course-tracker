@@ -2,9 +2,13 @@
   "student-1": {
     "name": "Sanveg Rane",
     "email": "sanveg.rane@gmail.com",
+    "number": "+919969782927",
     "subject": "CSC",
     "courses": {
-      "503": "Fall 2019"
+      "503": "Fall 2019",
+      "505": "Fall 2019",
+      "510": "Fall 2019",
+      "522": "Fall 2019"
     }
   }
 }

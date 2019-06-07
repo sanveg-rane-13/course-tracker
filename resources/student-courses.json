@@ -3,16 +3,18 @@
     "name": "Sanveg Rane",
     "email": "sanveg.rane@gmail.com",
     "subject": "CSC",
+    "number": "+919969782927",
     "courses": {
+      "503": "Fall 2019",
+      "505": "Fall 2019",
       "510": "Fall 2019",
-      "520": "Fall 2019",
-      "522": "Fall 2019",
-      "561": "Fall 2019"
+      "522": "Fall 2019"
     }
   },
   "student-2": {
     "name": "Saurabh Mhatre",
     "email": "mhatre.saurabh@outlook.com",
+    "number": "",
     "subject": "CSC",
     "courses": {
       "510": "Fall 2019",
@@ -22,6 +24,7 @@
   "student-3": {
     "name": "Rohit Nair",
     "email": "nair1111998@gmail.com",
+    "number": "",
     "subject": "CSC",
     "courses": {
       "510": "Fall 2019",
