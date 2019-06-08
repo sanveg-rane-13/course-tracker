@@ -34,29 +34,30 @@ def track_course_status_and_update_students():
         - Send notifications for each updated course
     """
     logger.info("Course-updater job triggered!")
-    course_updates = fetcher.update_crs_details_and_get_updates()
-    send_updates(course_updates)
+    all_courses, course_updates = fetcher.update_crs_details_and_get_updates()
+    send_updates(all_courses, course_updates)
 
 
-def send_updates(courses_list):
+def send_updates(all_courses, course_updates):
     """
     Send the processed details of courses to the email addresses of each student
     Args:
-        courses_list: List of course names to send emails
+        all_courses: All courses data to send test mail to admin
+        course_updates: List of course names to send emails
     """
-    if len(courses_list) <= 0:
+    if len(course_updates) <= 0:
         logger.info("No courses to update")
-        emailer.send_test_email()
+        emailer.send_test_email(all_courses)
         return
 
-    courses_data = fetcher.get_course_data(courses_list, False)
+    courses_data = fetcher.get_course_data(course_updates, False)
 
     # send mails
     logger.info("Sending update emails")
     std_crs_email_map = fetcher.map_courses_to_emails(courses_data)
     emailer.send_courses_updates(courses_data, std_crs_email_map)
 
-    emailer.send_test_email()
+    emailer.send_test_email(all_courses)
 
 
 def send_status_emails():
@@ -84,7 +85,7 @@ def main():
 
 
 def test_flow():
-    logger.info("Starting Script")
+    logger.info("Starting Test Script")
     initialize_course_data()
     emailer.init()
     track_course_status_and_update_students()

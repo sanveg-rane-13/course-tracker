@@ -207,7 +207,8 @@ def update_crs_details_and_get_updates():
         - Compare and return list of updated courses
         - Save the updated course details in json
     Returns:
-        list of courses which have been updated with statuses
+        updated_data: Latest updated data
+        changes: list of courses which have been updated with statuses
     """
     changes = []
     try:
@@ -225,7 +226,7 @@ def update_crs_details_and_get_updates():
     except Exception as error:
         logger.error("Error updating course statuses: " + str(error), error)
 
-    return changes
+    return updated_data, changes
 
 
 def compare_and_get_updates(saved_details, updated_details):

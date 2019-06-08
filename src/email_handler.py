@@ -122,14 +122,33 @@ def create_update_message_body(receiver_email, course_names_list, courses_data):
     return email_body
 
 
-def send_test_email():
+def send_test_email(course_updates):
     """
     Send test email to owner to verify process
+    Args:
+        course_updates: Data saved in json to be sent to admin
     """
     if service is None:
         logger.error("Error Sending email: Gmail API not configured.")
 
-    test_body = "Status Fetcher executed successfully!"
+    # adding status of each course to be sent to admin
+    courses_body = ""
+
+    if course_updates is not None:
+
+        for cr_name, cr_detail in course_updates.items():
+            course_det_text = cr_name + " - " + cr_detail['name'] + ": \n"
+
+            for index in range(len(cr_detail['status'])):
+                course_det_text += "\tlocation = " + cr_detail['location'][index] \
+                                   + "\t# " \
+                                   + "availability = " + cr_detail['status'][index] + "\n"
+
+            courses_body += course_det_text
+
+    # creating test body
+    test_body = "Status updated job executed successfully!"
+    test_body = test_body + "\n\n" + courses_body
     email_body = "{}".format(test_body)
 
     message = create_email(Config.test_receiver, Config.email_update_header, email_body)
@@ -147,7 +166,7 @@ def send_test_email():
 def create_email(receiver_email, subject, message_body):
     message = MIMEText(message_body)
     message['to'] = receiver_email
-    message['From'] = Config.owner
+    message['from'] = Config.owner
     message['subject'] = subject
 
     encoded_message = urlsafe_b64encode(message.as_bytes())
