@@ -7,8 +7,9 @@
     "courses": {
       "503": "Fall 2019",
       "505": "Fall 2019",
-      "510": "Fall 2019",
-      "522": "Fall 2019"
+      "522": "Fall 2019",
+      "540": "Fall 2019",
+      "565": "Fall 2019"
     }
   },
   "student-2": {
@@ -29,6 +30,16 @@
     "courses": {
       "510": "Fall 2019",
       "522": "Fall 2019"
+    }
+  },
+  "student-4": {
+    "name": "Mita Gavade",
+    "email": "mitagavade@gmail.com",
+    "number": "+918879131861",
+    "subject": "CSC",
+    "courses": {
+      "522": "Fall 2019",
+      "565": "Fall 2019"
     }
   }
 }
