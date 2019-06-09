@@ -1,6 +1,9 @@
 # course-tracker
 The project fetches statuses of courses offered by NCSU
 
+Script start:
+- tracker.py
+
 Setup:
 - Pull the code
 - Setup python environment
