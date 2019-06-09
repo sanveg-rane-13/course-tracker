@@ -130,6 +130,7 @@ def send_test_email(course_updates):
     """
     if service is None:
         logger.error("Error Sending email: Gmail API not configured.")
+        return
 
     # adding status of each course to be sent to admin
     courses_body = ""
@@ -144,7 +145,7 @@ def send_test_email(course_updates):
                                    + "\t# " \
                                    + "availability = " + cr_detail['status'][index] + "\n"
 
-            courses_body += course_det_text
+            courses_body += course_det_text + "\n"
 
     # creating test body
     test_body = "Status updated job executed successfully!"
@@ -160,7 +161,7 @@ def send_test_email(course_updates):
                         .execute())
         logger.debug("Message sent successfully: {}".format(sent_message['id']))
     except Exception as error:
-        logger.error("Error sending email: {}".format(error))
+        logger.error("Error sending test email: {}".format(error))
 
 
 def create_email(receiver_email, subject, message_body):
